@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum ElectionStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ENDED
+  CLOSED
+}
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+model Admin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Voter {
+  id           String   @id @default(cuid())
+  matricNumber String   @unique
+  fullName     String
+  level        String
+  email        String   @unique
+  password     String
+  photoUrl     String?
+  canVote      Boolean  @default(true)
+  hasVoted     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  votes Vote[]
+}
+
+model Election {
+  id          String         @id @default(cuid())
+  title       String
+  description String?
+  status      ElectionStatus @default(DRAFT)
+  startDate   DateTime
+  endDate     DateTime
+  bannerUrl   String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  positions Position[]
+}
+
+model Position {
+  id         String   @id @default(cuid())
+  electionId String
+  title      String
+  maxVotes   Int      @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  election   Election    @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  candidates Candidate[]
+  votes      Vote[]
+}
+
+model Candidate {
+  id         String   @id @default(cuid())
+  positionId String
+  fullName   String
+  bio        String?
+  photoUrl   String?
+  level      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  position Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  votes    Vote[]
+}
+
+model Vote {
+  id          String   @id @default(cuid())
+  voterId     String
+  positionId  String
+  candidateId String
+  castedAt    DateTime @default(now())
+
+  voter     Voter     @relation(fields: [voterId], references: [id])
+  position  Position  @relation(fields: [positionId], references: [id])
+  candidate Candidate @relation(fields: [candidateId], references: [id])
+
+  @@unique([voterId, positionId])
+}
