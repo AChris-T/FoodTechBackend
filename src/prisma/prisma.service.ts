@@ -8,7 +8,17 @@ const { PrismaClient } = require('@prisma/client');
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor() {
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    const rawUrl = process.env.DATABASE_URL ?? '';
+    const url = new URL(rawUrl);
+    const sslmode = url.searchParams.get('sslmode');
+    url.searchParams.delete('sslmode');
+
+    const ssl =
+      !sslmode || sslmode === 'disable'
+        ? false
+        : { rejectUnauthorized: sslmode === 'verify-full' };
+
+    const pool = new Pool({ connectionString: url.toString(), ssl });
     const adapter = new PrismaPg(pool);
     super({ adapter });
   }
