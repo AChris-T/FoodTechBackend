@@ -14,7 +14,7 @@ export class MailService {
 
   constructor(private config: ConfigService) {
     this.resend = new Resend(config.get<string>('mail.resendApiKey'));
-    this.from = config.get<string>('mail.from') ?? 'FoodTech Voting <onboarding@resend.dev>';
+    this.from = /* config.get<string>('mail.from') ?? */ 'onboarding@resend.dev';
   }
 
   private async send(payload: Parameters<Resend['emails']['send']>[0]): Promise<void> {
