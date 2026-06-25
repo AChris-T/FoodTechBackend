@@ -14,15 +14,19 @@ export class MailService {
 
   constructor(private config: ConfigService) {
     this.resend = new Resend(config.get<string>('mail.resendApiKey'));
-    this.from = /* config.get<string>('mail.from') ?? */ 'onboarding@resend.dev';
+    this.from = config.get<string>('mail.from') ?? 'uifoodtech.com.ng';
   }
 
-  private async send(payload: Parameters<Resend['emails']['send']>[0]): Promise<void> {
+  private async send(
+    payload: Parameters<Resend['emails']['send']>[0],
+  ): Promise<void> {
     const { data, error } = await this.resend.emails.send(payload);
     if (error) {
       throw new Error(`Resend error: ${error.message}`);
     }
-    this.logger.log(`Email sent id=${data?.id} → ${Array.isArray(payload.to) ? payload.to.join(', ') : payload.to}`);
+    this.logger.log(
+      `Email sent id=${data?.id} → ${Array.isArray(payload.to) ? payload.to.join(', ') : payload.to}`,
+    );
   }
 
   async sendVoterCredentials(data: CredentialsTemplateData): Promise<void> {
