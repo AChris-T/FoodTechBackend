@@ -17,23 +17,29 @@ export class MailService {
     this.from = config.get<string>('mail.from') ?? 'FoodTech Voting <onboarding@resend.dev>';
   }
 
+  private async send(payload: Parameters<Resend['emails']['send']>[0]): Promise<void> {
+    const { data, error } = await this.resend.emails.send(payload);
+    if (error) {
+      throw new Error(`Resend error: ${error.message}`);
+    }
+    this.logger.log(`Email sent id=${data?.id} → ${Array.isArray(payload.to) ? payload.to.join(', ') : payload.to}`);
+  }
+
   async sendVoterCredentials(data: CredentialsTemplateData): Promise<void> {
-    await this.resend.emails.send({
+    await this.send({
       from: this.from,
       to: data.email,
       subject: 'Your Voting Account Credentials',
       html: voterCredentialsTemplate(data),
     });
-    this.logger.log(`Credentials email sent → ${data.email}`);
   }
 
   async sendPasswordReset(to: string, resetUrl: string): Promise<void> {
-    const from = this.from;
     const year = new Date().getFullYear();
-    await this.resend.emails.send({
-      from,
+    await this.send({
+      from: this.from,
       to,
-      subject: 'Reset Your Voting Password',
+      subject: 'Your Voting Password',
       html: `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Reset Your Password</title></head>
@@ -152,6 +158,5 @@ export class MailService {
 </body>
 </html>`,
     });
-    this.logger.log(`Password reset email sent → ${to}`);
   }
 }
