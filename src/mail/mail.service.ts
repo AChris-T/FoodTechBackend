@@ -14,7 +14,9 @@ export class MailService {
 
   constructor(private config: ConfigService) {
     this.resend = new Resend(config.get<string>('mail.resendApiKey'));
-    this.from = config.get<string>('mail.from') ?? 'uifoodtech.com.ng';
+    this.from =
+      config.get<string>('mail.from') ??
+      'FoodTech Voting <voting@uifoodtech.com.ng>';
   }
 
   private async send(
