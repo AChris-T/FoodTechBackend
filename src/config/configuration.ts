@@ -18,8 +18,8 @@ export default () => ({
   },
 
   mail: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS,
+    resendApiKey: process.env.RESEND_API_KEY,
+    from: process.env.MAIL_FROM,
   },
 
   redis: {

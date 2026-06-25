@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import {
   voterCredentialsTemplate,
   CredentialsTemplateData,
@@ -9,22 +9,17 @@ import {
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
-  private transporter: nodemailer.Transporter;
+  private resend: Resend;
+  private from: string;
 
   constructor(private config: ConfigService) {
-    this.transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: config.get<string>('mail.user'),
-        pass: config.get<string>('mail.pass'),
-      },
-    });
+    this.resend = new Resend(config.get<string>('mail.resendApiKey'));
+    this.from = config.get<string>('mail.from') ?? 'FoodTech Voting <onboarding@resend.dev>';
   }
 
   async sendVoterCredentials(data: CredentialsTemplateData): Promise<void> {
-    const from = `"FoodTech Voting" <${this.config.get<string>('mail.user')}>`;
-    await this.transporter.sendMail({
-      from,
+    await this.resend.emails.send({
+      from: this.from,
       to: data.email,
       subject: 'Your Voting Account Credentials',
       html: voterCredentialsTemplate(data),
@@ -33,9 +28,9 @@ export class MailService {
   }
 
   async sendPasswordReset(to: string, resetUrl: string): Promise<void> {
-    const from = `"FoodTech Voting" <${this.config.get<string>('mail.user')}>`;
+    const from = this.from;
     const year = new Date().getFullYear();
-    await this.transporter.sendMail({
+    await this.resend.emails.send({
       from,
       to,
       subject: 'Reset Your Voting Password',
