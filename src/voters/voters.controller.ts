@@ -10,7 +10,6 @@ import {
   UseInterceptors,
   UploadedFile,
   ParseFilePipe,
-  FileTypeValidator,
   MaxFileSizeValidator,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -32,6 +31,7 @@ import { BulkImportDto } from './dto/bulk-import.dto';
 import { UpdateVoterDto } from './dto/update-voter.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { AdminAuthGuard } from '../common/guards/admin-auth.guard';
+import { CsvFileTypeValidator } from './csv-file-type.validator';
 
 @ApiTags('voters')
 @Controller('voters')
@@ -75,7 +75,7 @@ export class VotersController {
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
-          new FileTypeValidator({ fileType: /text\/csv|application\/vnd\.ms-excel|text\/plain/ }),
+          new CsvFileTypeValidator(),
         ],
         fileIsRequired: true,
       }),
